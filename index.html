@@ -1,83 +1,397 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>DUO Academia — PAR-Q (1 por tela, sem prévia)</title>
+<style>
+  :root{--bg:#0b1220;--panel:#0f1626;--line:#1f2937;--fg:#e7ecf3;--muted:#9fb0c7;--brand:#3b82f6;--ok:#22c55e;--danger:#ef4444;--dot:#2a3a55;}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,"Helvetica Neue",Arial}
+  .app{max-width:820px;margin:0 auto;padding:20px}
+  .logo{display:block;margin:14px auto 6px;height:46px}
+  h1{margin:0;text-align:center;font-size:1.9rem;font-weight:900}
+  h2{margin:.25rem 0 1rem;text-align:center;font-size:1.2rem;font-weight:700;color:var(--muted)}
+  .clock{font-feature-settings:"tnum";text-align:center;font-size:3.6rem;font-weight:900;margin:.4rem 0 1rem}
+  .stage{font-size:.95rem;text-align:center;color:#c9d4e4}
+  .dots{display:flex;gap:8px;justify-content:center;margin:.35rem 0 1.1rem}
+  .dots i{width:10px;height:10px;border-radius:999px;background:var(--dot);opacity:.6}
+  .dots i.active{background:var(--brand);opacity:1}
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .22s ease-out both}
+  @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+  label{display:block;margin:8px 0 8px;color:var(--muted);font-weight:600}
+  input{width:100%;padding:16px 15px;border-radius:12px;border:1px solid #22314b;background:#0a1322;color:var(--fg);font-size:1.05rem;outline:none}
+  input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(59,130,246,.25)}
+  #nome{text-transform:uppercase}
+  .help{margin-top:6px;color:var(--muted);font-size:.9rem}
+  .btns{display:flex;gap:12px;margin-top:18px}
+  .btn{flex:1;padding:14px 16px;border-radius:14px;border:1px solid #2a3448;background:#162136;color:#dbeafe;font-weight:800;font-size:1.05rem;cursor:pointer}
+  .btn.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+  .btn.ok{background:var(--ok);border-color:var(--ok);color:#01250d}
+  .btn.ghost{background:transparent;color:#cfe1ff;border-color:#2a3448;flex:0 0 auto;padding:12px 14px}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .yn{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px}
+  .yn .btn{font-size:1.25rem;padding:18px 0}
+  .terms{border:1px dashed #334155;border-radius:12px;padding:12px;background:#0a1322;max-height:220px;overflow:auto}
+  .ckline{display:flex;gap:10px;align-items:center;margin:12px 0}
+  .ckline input[type="checkbox"]{width:22px;height:22px}
+  #sigWrap{display:none}
+  canvas{width:100%;height:190px;background:#fff;border-radius:10px;border:0;touch-action:none}
+  footer{margin:16px 4px 6px;text-align:center;color:#9fb0c7;font-size:.85rem}
+
+  /* --- Área de impressão oculta (fora da tela; não usar display:none) --- */
+  #printContainer{
+    position:absolute; left:-100000px; top:-100000px;
+    width:0; height:0; overflow:hidden; visibility:visible;
+  }
+  .sheet{background:#fff;color:#111;width:794px;min-height:1123px;padding:28mm 20mm;border:1px solid #ddd;border-radius:6px}
+  .sheet table{width:100%;border-collapse:collapse;font-size:13px}
+  .sheet th,.sheet td{border:1px solid #ccc;padding:10px 12px;text-align:left;vertical-align:middle}
+  #pv_questions th:nth-child(2),#pv_questions th:nth-child(3),#pv_questions td:nth-child(2),#pv_questions td:nth-child(3){width:10.5%;text-align:center}
+  #pv_questions td.sn{font-weight:800}
+</style>
+</head>
+<body>
+<div class="app">
+  <img class="logo" src="logo.png" alt="DUO">
+  <h1>DUO ACADEMIA</h1>
+  <h2>Ponto Eletrônico / PAR-Q</h2>
+  <div class="clock" id="clock">--:--:--</div>
+  <div class="stage" id="stage">Etapa 1 de 10</div>
+  <div class="dots" id="dots"></div>
+
+  <!-- TELAS (1 por vez) -->
+  <div id="screens">
+    <!-- 1: Nome -->
+    <section class="screen active">
+      <div class="card">
+        <label for="nome">Nome completo</label>
+        <input id="nome" placeholder="Ex.: JOÃO DA SILVA" autocomplete="name"/>
+        <div class="help">Obrigatório</div>
+        <div class="btns">
+          <button class="btn ghost" id="b1back" disabled>Voltar</button>
+          <button class="btn primary" id="b1next" disabled>Próximo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2: CPF -->
+    <section class="screen">
+      <div class="card">
+        <label for="cpf">CPF</label>
+        <input id="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"/>
+        <div class="help">Obrigatório</div>
+        <div class="btns">
+          <button class="btn ghost" data-back>Voltar</button>
+          <button class="btn primary" id="b2next" disabled>Próximo</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3–9: Perguntas S/N -->
+    <section class="screen"><div class="card">
+      <div><strong>1. Tem algum problema cardíaco de qualquer tipo?</strong></div>
+      <div class="yn"><button class="btn ok" data-yn="q1:S">Sim</button><button class="btn" data-yn="q1:N">Não</button></div>
+      <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
+    </div></section>
+
+    <section class="screen"><div class="card">
+      <div><strong>2. Sente dores no peito quando pratica exercícios?</strong></div>
+      <div class="yn"><button class="btn ok" data-yn="q2:S">Sim</button><button class="btn" data-yn="q2:N">Não</button></div>
+      <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
+    </div></section>
+
+    <section class="screen"><div class="card">
+      <div><strong>3. Recentemente sentiu dores no peito durante algum exercício físico?</strong></div>
+      <div class="yn"><button class="btn ok" data-yn="q3:S">Sim</button><button class="btn" data-yn="q3:N">Não</button></div>
+      <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
+    </div></section>
+
+    <section class="screen"><div class="card">
+      <div><strong>4. Apresenta desequilíbrio ou tontura levando ao desmaio?</strong></div>
+      <div class="yn"><button class="btn ok" data-yn="q4:S">Sim</button><button class="btn" data-yn="q4:N">Não</button></div>
+      <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
+    </div></section>
+
+    <section class="screen"><div class="card">
+      <div><strong>5. Tem algum problema osteomioarticular que possa piorar com o exercício?</strong></div>
+      <div class="yn"><button class="btn ok" data-yn="q5:S">Sim</button><button class="btn" data-yn="q5:N">Não</button></div>
+      <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
+    </div></section>
+
+    <section class="screen"><div class="card">
+      <div><strong>6. Usa algum medicamento para pressão arterial ou coração?</strong></div>
+      <div class="yn"><button class="btn ok" data-yn="q6:S">Sim</button><button class="btn" data-yn="q6:N">Não</button></div>
+      <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
+    </div></section>
+
+    <section class="screen"><div class="card">
+      <div><strong>7. Sabe de alguma razão pela qual não deve praticar exercícios?</strong></div>
+      <div class="yn"><button class="btn ok" data-yn="q7:S">Sim</button><button class="btn" data-yn="q7:N">Não</button></div>
+      <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
+    </div></section>
+
+    <!-- 10: Termo obrigatório -->
+    <section class="screen">
+      <div class="card">
+        <h3 style="margin:.2rem 0 .6rem;text-align:center">Termo de responsabilidade (obrigatório)</h3>
+        <div class="terms" style="margin-bottom:8px;font-size:1rem;line-height:1.55">
+          Declaro estar ciente de que é recomendável a consulta médica antes de aumentar meu nível de atividade física.
+          Assumo plena responsabilidade por minha prática e concordo com os termos.
+        </div>
+
+        <label class="ckline">
+          <input id="aceite" type="checkbox"> <span>Li e concordo com o termo acima.</span>
+        </label>
+
+        <!-- Rúbrica aparece só após o aceite -->
+        <div id="sigWrap">
+          <label>Rúbrica/Assinatura</label>
+          <canvas id="signaturePad" width="900" height="380" aria-label="Área para assinatura"></canvas>
+          <div class="btns" style="margin-top:10px"><button class="btn" id="btnLimpar">Limpar</button></div>
+        </div>
+
+        <!-- Botão só aparece DEPOIS de assinar -->
+        <div class="btns" id="pdfRow" style="display:none">
+          <button class="btn ghost" data-back>Voltar</button>
+          <button class="btn ok" id="btnPDF">Gerar PDF</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>Responda e avance. O PDF é gerado ao final.</footer>
+</div>
+
+<!-- Área OCULTA usada na geração do PDF -->
+<div id="printContainer" aria-hidden="true">
+  <div id="printArea" class="sheet">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <img id="sheet_logo" style="height:34px" alt="Logo DUO"/>
+        <div>
+          <h3 style="margin:0 0 4px">DUO ACADEMIA</h3>
+          <small style="color:#555">PAR-Q — Questionário de Prontidão para Atividade Física</small>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;color:#444">Código: <span id="doc_id"></span></div>
+        <div style="font-size:12px;color:#444">Data: <span id="doc_data"></span></div>
+      </div>
+    </div>
+    <div style="height:1px;background:#ccc;margin:10px 0"></div>
+
+    <div class="section">
+      <table>
+        <tr><th colspan="2">Identificação</th></tr>
+        <tr><td style="width:26%">Nome completo</td><td id="pv_nome"></td></tr>
+        <tr><td>CPF</td><td id="pv_cpf"></td></tr>
+      </table>
+    </div>
+
+    <div class="section" style="margin-top:14px">
+      <table id="pv_questions">
+        <tr><th style="width:79%">Pergunta</th><th>S</th><th>N</th></tr>
+        <tr><td>1. Problema cardíaco de qualquer tipo</td><td id="p1s" class="sn"></td><td id="p1n" class="sn"></td></tr>
+        <tr><td>2. Dores no peito ao praticar exercícios</td><td id="p2s" class="sn"></td><td id="p2n" class="sn"></td></tr>
+        <tr><td>3. Dores recentes no peito durante exercício</td><td id="p3s" class="sn"></td><td id="p3n" class="sn"></td></tr>
+        <tr><td>4. Desequilíbrio/tontura levando ao desmaio</td><td id="p4s" class="sn"></td><td id="p4n" class="sn"></td></tr>
+        <tr><td>5. Problema osteomioarticular que pode piorar</td><td id="p5s" class="sn"></td><td id="p5n" class="sn"></td></tr>
+        <tr><td>6. Uso de medicamento para pressão/coração</td><td id="p6s" class="sn"></td><td id="p6n" class="sn"></td></tr>
+        <tr><td>7. Alguma razão para não praticar exercícios</td><td id="p7s" class="sn"></td><td id="p7n" class="sn"></td></tr>
+      </table>
+    </div>
+
+    <div class="section" style="margin-top:14px">
+      <table>
+        <tr><th>Termo de responsabilidade</th></tr>
+        <tr><td>
+          Declaro estar ciente de que é recomendável a consulta médica antes de aumentar meu nível de atividade física.
+          Assumo plena responsabilidade por minha prática e concordo com os termos.
+        </td></tr>
+        <tr><td>
+          <img id="pv_assinatura" alt="Assinatura" style="display:block;width:100%;height:120px;object-fit:contain"/>
+          <div style="height:1px;background:#bbb;margin:6px 0"></div>
+          <div style="font-size:12px;color:#555">Assinatura/Rúbrica do Contratante</div>
+        </td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script>
-// ...mantenha o resto do código
+  const $ = s=>document.querySelector(s);
+  const $$ = s=>Array.from(document.querySelectorAll(s));
+  const onlyDigits = v => (v||'').replace(/\D+/g,'');
+  const maskCPF = v => onlyDigits(v).slice(0,11).replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+  function isValidCPF(cpf){
+    cpf=onlyDigits(cpf); if(cpf.length!==11||/^(\d)\1{10}$/.test(cpf)) return false;
+    let s=0,r; for(let i=1;i<=9;i++) s+=parseInt(cpf.substring(i-1,i))*(11-i);
+    r=(s*10)%11; if(r===10||r===11) r=0; if(r!==parseInt(cpf.substring(9,10))) return false;
+    s=0; for(let i=1;i<=10;i++) s+=parseInt(cpf.substring(i-1,i))*(12-i);
+    r=(s*10)%11; if(r===10||r===11) r=0; return r===parseInt(cpf.substring(10,11));
+  }
+  function normalizeName(s){return s.normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();}
 
-// === SUBSTITUA a ensureSignaturePad inteira por esta ===
-let signaturePad, canv;
-function ensureSignaturePad(){
-  if (signaturePad) return;
-  canv = document.getElementById('signaturePad');
-  const fit = () => {
-    const ratio = Math.max(window.devicePixelRatio || 1, 1);
-    const rect = canv.getBoundingClientRect();
-    canv.width = rect.width * ratio;
-    canv.height = rect.height * ratio;
-    canv.getContext('2d').scale(ratio, ratio);
-  };
-  fit();
+  /* relógio */
+  const clk = ()=>$('#clock').textContent = new Date().toLocaleTimeString('pt-BR',{hour12:false});
+  setInterval(clk,1000); clk();
 
-  signaturePad = new SignaturePad(canv, {
-    backgroundColor:'#fff',
-    penColor:'#111827',
-    minWidth:.7,
-    maxWidth:2,
-    throttle:0,
-    // 👇 é aqui que garantimos que o botão apareça ao terminar um traço
-    onEnd: () => {
+  /* etapas */
+  const screens = $$('#screens .screen'); let step=0; const total=screens.length;
+  function paintDots(){const dots=$('#dots');dots.innerHTML='';for(let i=0;i<total;i++){const el=document.createElement('i');if(i===step)el.className='active';dots.appendChild(el);}}
+  function setStage(){$('#stage').textContent=`Etapa ${step+1} de ${total}`;paintDots();}
+  function go(i){if(i<0||i>=total)return;screens[step].classList.remove('active');step=i;screens[step].classList.add('active');setStage();screens[step].scrollIntoView({behavior:'smooth',block:'start'});}
+
+  /* Nome + CPF */
+  const nome=$('#nome'), cpf=$('#cpf');
+  $('#b1next').disabled=true; $('#b2next').disabled=true;
+  nome.addEventListener('input',e=>{e.target.value=(e.target.value||'').toLocaleUpperCase('pt-BR');$('#b1next').disabled=!e.target.value.trim();renderPreview();});
+  cpf.addEventListener('input',e=>{e.target.value=maskCPF(e.target.value);$('#b2next').disabled=!isValidCPF(e.target.value);renderPreview();});
+  $('#b1next').addEventListener('click',()=>go(1)); $('#b1back').addEventListener('click',()=>go(0));
+  $('#b2next').addEventListener('click',()=>go(2)); $$('#screens [data-back]').forEach(b=>b.addEventListener('click',()=>go(step-1)));
+
+  /* respostas S/N */
+  const answers={q1:'',q2:'',q3:'',q4:'',q5:'',q6:'',q7:''};
+  $$('#screens [data-yn]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const [q,val]=btn.getAttribute('data-yn').split(':'); answers[q]=val; renderPreview(); go(step+1);
+    });
+  });
+
+  /* termo + assinatura */
+  let signaturePad, canv;
+  function ensureSignaturePad(){
+    if (signaturePad) return;
+
+    canv = document.getElementById('signaturePad');
+
+    const fit = () => {
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const rect = canv.getBoundingClientRect();
+      canv.width  = rect.width  * ratio;
+      canv.height = rect.height * ratio;
+      const ctx = canv.getContext('2d');
+      ctx.scale(ratio, ratio);
+    };
+    fit();
+
+    // cria o pad SEM eventos no construtor
+    signaturePad = new SignaturePad(canv, {
+      backgroundColor:'#fff',
+      penColor:'#111827',
+      minWidth:.7,
+      maxWidth:2,
+      throttle:0
+    });
+
+    // quando terminar o traço -> mostra "Gerar PDF"
+    signaturePad.onEnd = () => {
       if (!signaturePad.isEmpty()) {
-        // Atualiza a prévia da assinatura do PDF
         const img = document.getElementById('pv_assinatura');
         if (img) img.src = signaturePad.toDataURL('image/png');
-        // Mostra o botão
         const row = document.getElementById('pdfRow');
         if (row) row.style.display = 'flex';
       }
+    };
+
+    // Limpar assinatura -> esconde botão
+    const btnLimpar = document.getElementById('btnLimpar');
+    if (btnLimpar) {
+      btnLimpar.addEventListener('click', (e)=>{
+        e.preventDefault();
+        signaturePad.clear();
+        const img = document.getElementById('pv_assinatura');
+        if (img) img.removeAttribute('src');
+        const row = document.getElementById('pdfRow');
+        if (row) row.style.display = 'none';
+      });
     }
-  });
 
-  // Limpar assinatura -> esconde botão
-  document.getElementById('btnLimpar').addEventListener('click', (e)=>{
-    e.preventDefault();
-    signaturePad.clear();
-    const img = document.getElementById('pv_assinatura');
-    if (img) img.removeAttribute('src');
-    const row = document.getElementById('pdfRow');
-    if (row) row.style.display = 'none';
-  });
-
-  // Refit em resize
-  window.addEventListener('resize', ()=>{
-    if (!signaturePad) return;
-    const data = signaturePad.toData();
-    fit();
-    signaturePad.clear();
-    signaturePad.fromData(data);
-  });
-}
-
-// === SUBSTITUA o handler do checkbox por este ===
-document.getElementById('aceite').addEventListener('change', (e)=>{
-  const sigWrap = document.getElementById('sigWrap');
-  const pdfRow  = document.getElementById('pdfRow');
-  if (e.target.checked){
-    sigWrap.style.display = 'block';
-    ensureSignaturePad();
-    // Se a pessoa já tinha assinado antes (raro), garante o botão
-    if (signaturePad && !signaturePad.isEmpty()) {
-      pdfRow.style.display = 'flex';
-    }
-  } else {
-    sigWrap.style.display = 'none';
-    pdfRow.style.display  = 'none';
-    if (signaturePad) signaturePad.clear();
-    const img = document.getElementById('pv_assinatura');
-    if (img) img.removeAttribute('src');
+    // Refit em resize
+    window.addEventListener('resize', ()=>{
+      if (!signaturePad) return;
+      const data = signaturePad.toData();
+      fit();
+      signaturePad.clear();
+      signaturePad.fromData(data);
+    });
   }
-});
 
-// === (Opcional, mas útil) chame isto logo após criar pdfRow ===
-// Garante consistência caso chegue na tela já com aceite marcado por algum motivo
-(function initPdfRow(){
-  const pdfRow = document.getElementById('pdfRow');
-  if (pdfRow) pdfRow.style.display = 'none';
-})();
+  // checkbox controla rúbrica e botão
+  document.getElementById('aceite').addEventListener('change', (e)=>{
+    const sigWrap = document.getElementById('sigWrap');
+    const pdfRow  = document.getElementById('pdfRow');
+    if (e.target.checked){
+      if (sigWrap) sigWrap.style.display = 'block';
+      ensureSignaturePad();
+      if (signaturePad && !signaturePad.isEmpty() && pdfRow) pdfRow.style.display = 'flex';
+    } else {
+      if (sigWrap) sigWrap.style.display = 'none';
+      if (pdfRow)  pdfRow.style.display  = 'none';
+      if (signaturePad) signaturePad.clear();
+      const img = document.getElementById('pv_assinatura');
+      if (img) img.removeAttribute('src');
+    }
+  });
+
+  /* data e logo p/ PDF */
+  (function setToday(){
+    try{
+      const p=new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Fortaleza',day:'2-digit',month:'2-digit',year:'numeric'}).formatToParts(new Date());
+      $('#doc_data').textContent=`${p.find(x=>x.type==='day').value}/${p.find(x=>x.type==='month').value}/${p.find(x=>x.type==='year').value}`;
+    }catch(e){
+      const t=new Date(), dd=String(t.getDate()).padStart(2,'0'), mm=String(t.getMonth()+1).padStart(2,'0'), yy=t.getFullYear();
+      $('#doc_data').textContent=`${dd}/${mm}/${yy}`;
+    }
+  })();
+  (function setLogo(){
+    const src=new URLSearchParams(location.search).get('logo')||'logo.png';
+    const img=$('#sheet_logo'); if(img){img.src=src; img.setAttribute('crossorigin','anonymous');}
+  })();
+
+  function renderPreview(){
+    $('#pv_nome').textContent=(nome.value||'').toLocaleUpperCase('pt-BR');
+    $('#pv_cpf').textContent=cpf.value||'';
+    for(let i=1;i<=7;i++){ $('#p'+i+'s').textContent=answers['q'+i]==='S'?'X':''; $('#p'+i+'n').textContent=answers['q'+i]==='N'?'X':''; }
+    if(signaturePad && !signaturePad.isEmpty()){ $('#pv_assinatura').src=signaturePad.toDataURL('image/png'); }
+  }
+
+  async function generatePDF(){
+    const nomeV=(nome.value||'').trim(), cpfV=(cpf.value||'').trim();
+    if(!nomeV){ alert('Informe o nome.'); go(0); return; }
+    if(!isValidCPF(cpfV)){ alert('CPF inválido.'); go(1); return; }
+    if(Object.values(answers).some(v=>v==='')){ alert('Responda todas as 7 perguntas.'); return; }
+    if(!$('#aceite').checked){ alert('Aceite o termo para continuar.'); return; }
+    if(!signaturePad || signaturePad.isEmpty()){ alert('Faça a rúbrica para continuar.'); return; }
+
+    $('#doc_id').textContent=new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
+    renderPreview();
+
+    const area=document.getElementById('printArea');
+    const canvas=await html2canvas(area,{scale:2,useCORS:true,backgroundColor:'#ffffff'});
+    const imgData=canvas.toDataURL('image/png');
+    const { jsPDF }=window.jspdf;
+    const pdf=new jsPDF('p','mm','a4');
+    const pageWidth=pdf.internal.pageSize.getWidth();
+    const w=pageWidth-20, h=(canvas.height*w)/canvas.width;
+    pdf.addImage(imgData,'PNG',10,10,w,h,'','FAST');
+
+    const d=new Date(), dd=String(d.getDate()).padStart(2,'0'), mm=String(d.getMonth()+1).padStart(2,'0'), yyyy=d.getFullYear();
+    pdf.save(`PARQ_${normalizeName(nomeV)}_${dd}${mm}${yyyy}.pdf`);
+  }
+
+  document.getElementById('btnPDF').addEventListener('click', e=>{ e.preventDefault(); generatePDF(); });
+
+  /* inicia */
+  paintDots(); setStage();
 </script>
+</body>
+</html>
