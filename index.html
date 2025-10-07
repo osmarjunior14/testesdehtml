@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -34,7 +35,7 @@
   .yn .btn[data-yn*=":S"]{background:#ef4444;border-color:#ef4444;color:#fff} /* vermelho p/ Sim */
   .yn .btn[data-yn*=":N"]{background:#22c55e;border-color:#22c55e;color:#01250d} /* verde p/ Não */
   .terms{border:1px dashed #334155;border-radius:12px;padding:12px;background:#0a1322;line-height:1.5;margin-bottom:8px}
-  .ckline{display:flex;gap:10px;align-items:center;margin:12px 0}
+  .ckline{display:flex;align-items:center;gap:10px;justify-content:flex-end;white-space:nowrap}
   #sigWrap{display:none}
   canvas{width:100%;height:190px;background:#fff;border-radius:10px;border:0;touch-action:none}
   /* Área de impressão oculta (não usar display:none) */
@@ -45,11 +46,19 @@
   #pv_questions th:nth-child(2),#pv_questions th:nth-child(3),#pv_questions td:nth-child(2),#pv_questions td:nth-child(3){width:10.5%;text-align:center}
   #pv_questions td.sn{font-weight:800}
 </style>
+<style id="pdf-spacing-fix">
+/* === PDF readability tweak (minimal) === */
+#previewFinal, #printArea, #previewFinal *, #printArea *{
+  letter-spacing: 0.24px;
+  word-spacing: 0.08em;
+  text-rendering: optimizeLegibility;
+}
+</style>
 </head>
 <body>
 <div class="app">
   <img class="logo" src="logo.png" alt="DUO">
-  <h1>DUO ACADEMIA</h1>
+  <h1>Questionário de Prontidão para Atividade Física (Par-Q)</h1>
   <div class="clock" id="clock">--:--:--</div>
   <div class="stage" id="stage">Etapa 1 de 10</div>
   <div class="dots" id="dots"></div>
@@ -75,7 +84,7 @@
     <section class="screen"><div class="card"><strong>2. Sente dores no peito quando pratica exercícios?</strong><div class="yn"><button class="btn" data-yn="q2:S">Sim</button><button class="btn" data-yn="q2:N">Não</button></div><div class="btns"><button class="btn ghost" data-back>Voltar</button></div></div></section>
     <section class="screen"><div class="card"><strong>3. Recentemente sentiu dores no peito durante algum exercício físico?</strong><div class="yn"><button class="btn" data-yn="q3:S">Sim</button><button class="btn" data-yn="q3:N">Não</button></div><div class="btns"><button class="btn ghost" data-back>Voltar</button></div></div></section>
     <section class="screen"><div class="card"><strong>4. Apresenta desequilíbrio ou tontura levando ao desmaio?</strong><div class="yn"><button class="btn" data-yn="q4:S">Sim</button><button class="btn" data-yn="q4:N">Não</button></div><div class="btns"><button class="btn ghost" data-back>Voltar</button></div></div></section>
-    <section class="screen"><div class="card"><strong>5. Tem algum problema osteomioarticular que possa piorar com o exercício?</strong><div class="yn"><button class="btn" data-yn="q5:S">Sim</button><button class="btn" data-yn="q5:N">Não</button></div><div class="btns"><button class="btn ghost" data-back>Voltar</button></div></div></section>
+    <section class="screen"><div class="card"><strong>5. Tem algum problema ósseo, muscular ou articular que possa piorar com o exercício?</strong><div class="yn"><button class="btn" data-yn="q5:S">Sim</button><button class="btn" data-yn="q5:N">Não</button></div><div class="btns"><button class="btn ghost" data-back>Voltar</button></div></div></section>
     <section class="screen"><div class="card"><strong>6. Usa algum medicamento para pressão arterial ou coração?</strong><div class="yn"><button class="btn" data-yn="q6:S">Sim</button><button class="btn" data-yn="q6:N">Não</button></div><div class="btns"><button class="btn ghost" data-back>Voltar</button></div></div></section>
     <section class="screen"><div class="card"><strong>7. Sabe de alguma razão pela qual não deve praticar exercícios?</strong><div class="yn"><button class="btn" data-yn="q7:S">Sim</button><button class="btn" data-yn="q7:N">Não</button></div><div class="btns"><button class="btn ghost" data-back>Voltar</button></div></div></section>
 
@@ -83,7 +92,7 @@
       <div class="card">
         <h3 style="margin:.2rem 0 .6rem;text-align:center">Termo de responsabilidade (obrigatório)</h3>
         <div class="terms">
-          Declaro estar ciente de que é recomendável a consulta médica antes de aumentar meu nível de atividade física. 
+          Declaro estar ciente de que caso alguma resposta tenha sido "sim" é recomendável a consulta médica antes de aumentar meu nível de atividade física. 
           Assumo plena responsabilidade por minha prática e concordo com os termos.
         </div>
         <label class="ckline"><input id="aceite" type="checkbox"> Li e concordo com o termo acima.</label>
@@ -91,15 +100,27 @@
           <label>Rúbrica/Assinatura</label>
           <canvas id="signaturePad" width="900" height="350"></canvas>
           <div class="btns"><button class="btn" id="btnLimpar">Limpar</button></div>
+        <div class="btns"><button class="btn ok" id="nextTerm">Próximo</button></div>
         </div>
         <!-- Agora o botão SEMPRE aparece; começa desabilitado -->
-        <div class="btns" id="pdfRow"><button class="btn ok" id="btnPDF" disabled>Gerar PDF</button></div>
+        </div>
+    </section>
+  
+
+
+    <section class="screen" id="screenPreviewFinal">
+      <div class="card">
+        <h3 style="margin:.2rem 0 .6rem;text-align:center">Prévia do PDF</h3>
+        <div id="previewFinal" class="sheet" style="max-width:794px;margin:0 auto"></div>
+        <div class="btns">
+          <button class="btn" data-back>Voltar</button>
+          <button class="btn ok" id="btnPDF">Gerar PDF</button>
+        </div>
       </div>
     </section>
-  </div>
-</div>
 
-<!-- Área oculta para gerar PDF -->
+</div>
+</div><!-- Área oculta para gerar PDF -->
 <div id="printContainer" aria-hidden="true">
   <div id="printArea" class="sheet">
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -128,13 +149,13 @@
     <div class="section" style="margin-top:14px">
       <table id="pv_questions">
         <tr><th style="width:79%">Pergunta</th><th>S</th><th>N</th></tr>
-        <tr><td>1. Problema cardíaco de qualquer tipo</td><td id="p1s" class="sn"></td><td id="p1n" class="sn"></td></tr>
-        <tr><td>2. Dores no peito ao praticar exercícios</td><td id="p2s" class="sn"></td><td id="p2n" class="sn"></td></tr>
-        <tr><td>3. Dores recentes no peito durante exercício</td><td id="p3s" class="sn"></td><td id="p3n" class="sn"></td></tr>
-        <tr><td>4. Desequilíbrio/tontura levando ao desmaio</td><td id="p4s" class="sn"></td><td id="p4n" class="sn"></td></tr>
-        <tr><td>5. Problema osteomioarticular que pode piorar</td><td id="p5s" class="sn"></td><td id="p5n" class="sn"></td></tr>
-        <tr><td>6. Uso de medicamento para pressão/coração</td><td id="p6s" class="sn"></td><td id="p6n" class="sn"></td></tr>
-        <tr><td>7. Alguma razão para não praticar exercícios</td><td id="p7s" class="sn"></td><td id="p7n" class="sn"></td></tr>
+        <tr><td>1. Possui problema cardíaco de qualquer tipo</td><td id="p1s" class="sn"></td><td id="p1n" class="sn"></td></tr>
+        <tr><td>2. Acusa dores no peito ao praticar exercícios</td><td id="p2s" class="sn"></td><td id="p2n" class="sn"></td></tr>
+        <tr><td>3. Sentiu dores recentes no peito durante atividades de esforço</td><td id="p3s" class="sn"></td><td id="p3n" class="sn"></td></tr>
+        <tr><td>4. Apresenta desequilíbrio/tontura levando ao desmaio</td><td id="p4s" class="sn"></td><td id="p4n" class="sn"></td></tr>
+        <tr><td>5. Possui problema osteomioarticular que pode piorar com exercício</td><td id="p5s" class="sn"></td><td id="p5n" class="sn"></td></tr>
+        <tr><td>6. Usa medicamento para pressão/coração</td><td id="p6s" class="sn"></td><td id="p6n" class="sn"></td></tr>
+        <tr><td>7. Tem ciência de alguma razão para não praticar exercícios</td><td id="p7s" class="sn"></td><td id="p7n" class="sn"></td></tr>
       </table>
     </div>
 
@@ -142,7 +163,7 @@
       <table>
         <tr><th>Termo de responsabilidade</th></tr>
         <tr><td>
-          Declaro estar ciente de que é recomendável a consulta médica antes de aumentar meu nível de atividade física.
+          Declaro estar ciente de que, caso alguma resposta tenha sido "sim" é recomendável a consulta médica antes de aumentar meu nível de atividade física.
           Assumo plena responsabilidade por minha prática e concordo com os termos.
         </td></tr>
         <tr><td>
@@ -192,12 +213,8 @@ function updatePDFButton(){
   if (!btn) return;
   const aceiteOk = $('#aceite')?.checked;
   const assinOk  = (signaturePad && !signaturePad.isEmpty());
-  if (aceiteOk && assinOk) {
-  btn.removeAttribute('disabled');   // habilita de fato (remove o atributo)
-} else {
-  btn.setAttribute('disabled','');   // desabilita
+  const scr = btn.closest('.screen'); if (scr && scr.id==='screenPreviewFinal' && scr.classList.contains('active')){ btn.removeAttribute('disabled'); return; } btn.disabled = !(aceiteOk && assinOk);
 }
-
 function ensureSignaturePad(){
   if (signaturePad) { updatePDFButton(); return; }
   const c = $('#signaturePad');
@@ -207,8 +224,7 @@ function ensureSignaturePad(){
   };
   fit();
   signaturePad = new SignaturePad(c,{backgroundColor:'#fff',penColor:'#111',minWidth:.7,maxWidth:2});
-  signaturePad.onBegin = updatePDFButton;
-  signaturePad.onEnd   = updatePDFButton;
+  signaturePad.onBegin = updatePDFButton; signaturePad.onEnd = updatePDFButton;   // ao terminar um traço, revalida
   $('#btnLimpar').onclick=(e)=>{e.preventDefault(); signaturePad.clear(); updatePDFButton();};
   window.addEventListener('resize',()=>{ if(!signaturePad) return; const data=signaturePad.toData(); fit(); signaturePad.clear(); signaturePad.fromData(data); });
 }
@@ -230,10 +246,28 @@ function renderPreview(){
   }
 })(); (function setLogo(){ const src=new URLSearchParams(location.search).get('logo')||'logo.png'; const img=$('#sheet_logo'); if(img){img.src=src; img.setAttribute('crossorigin','anonymous');} })();
 
+
+// === Etapa 10 -> Prévia Final ===
+const nextTermBtn = document.getElementById('nextTerm');
+if (nextTermBtn){
+  nextTermBtn.addEventListener('click', ()=>{
+    if (!$('#aceite').checked){ alert('Você precisa aceitar o termo para continuar.'); return; }
+    if (!signaturePad || signaturePad.isEmpty()){ alert('Por favor, faça sua rúbrica/assinatura para continuar.'); return; }
+    renderPreview();
+  pushSignatureToPrintArea();
+    const pa = document.getElementById('printArea');
+    const pv = document.getElementById('previewFinal');
+    if (pa && pv){ pv.innerHTML = pa.innerHTML; }
+    go(step+1);
+    const b = document.getElementById('btnPDF');
+    if (b){ b.removeAttribute('disabled'); b.classList.remove('disabled'); }
+  });
+}
 // gerar PDF
 function normalizeName(s){return s.normalize('NFD').replace(/\p{Diacritic}/gu,'').replace(/[^A-Za-z0-9]/g,'').toUpperCase();}
 async function generatePDF(){
-  // validações finais
+    pushSignatureToPrintArea();
+// validações finais
   if(!$('#nome').value.trim()){ alert('Informe o nome.'); go(0); return; }
   if(!isValidCPF($('#cpf').value)){ alert('CPF inválido.'); go(1); return; }
   if(Object.values(answers).some(v=>v==='')){ alert('Responda todas as 7 perguntas.'); return; }
@@ -259,6 +293,17 @@ document.getElementById('btnPDF').addEventListener('click', (e)=>{ e.preventDefa
 
 // estado inicial do botão
 updatePDFButton();
+
+
+// --- ASSINATURA -> IMAGEM NA FOLHA (printArea) ---
+function pushSignatureToPrintArea(){
+  const img = document.getElementById('pv_assinatura');
+  if (img && typeof signaturePad !== 'undefined' && signaturePad && !signaturePad.isEmpty()){
+    img.src = signaturePad.toDataURL('image/png');
+    img.style.display = 'block';
+  }
+}
+
 </script>
 </body>
 </html>
