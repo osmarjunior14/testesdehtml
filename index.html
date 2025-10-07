@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>DUO Academia — Autorização p/ Terceiros (8 etapas) — Fix assinatura</title>
+<title>DUO Academia — Autorização p/ Terceiros (8 etapas) — Canvas calibrado</title>
 <style>
   :root{ --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --fg:#e5e7eb; --line:#1f2937; --brand:#3b82f6; --ok:#22c55e; --danger:#ef4444; }
   *{box-sizing:border-box} html,body{height:100%}
@@ -30,6 +30,8 @@
   .screen{display:none}.screen.active{display:block}
   .titlecenter{font-size:14px;text-align:center;margin-bottom:8px;color:var(--muted)}
   footer{margin-top:20px;font-size:12px;color:var(--muted);text-align:center}
+
+  /* ===== PDF sheet ===== */
   .sheet{background:#fff;color:#111;width:794px;min-height:1123px;padding:28mm 20mm;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 30px rgba(0,0,0,.15); margin-top:10px}
   .sheet h3{margin:0 0 8px}.sheet small{color:#555}.sheet .section{margin-top:14px}
   .sheet table{width:100%;border-collapse:collapse;font-size:13px}.sheet th,.sheet td{border:1px solid #ccc;padding:6px 8px;text-align:left}
@@ -37,11 +39,18 @@
   .sheet .sign-img{max-width:100%;max-height:130px;border:none;background:transparent;display:block;margin:0 auto;object-fit:contain}
   .sheet .line{height:1px;background:#ccc;margin:6px 0}
   .sheet .brand{display:flex;align-items:center;gap:10px}.sheet .brand img.logo{height:38px;width:auto;display:block}
+
+  /* MAIÚSCULO */
   input[type="text"], input:not([type]), textarea { text-transform: uppercase; }
   input[type="date"], input[type="number"] { text-transform: none; }
   #printArea .ans { text-transform: uppercase; }
+  select:required:invalid{color:var(--muted)}
+
+  /* Legibilidade no PDF */
   #printArea, #printArea *{ font-family: Arial, Helvetica, sans-serif; font-kerning: none; letter-spacing:.2px; word-spacing:.4px; line-height:1.25; -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
   #printArea table th, #printArea table td{ letter-spacing:.3px; }
+
+  /* Checkbox aceitar: branco -> verde marcado (iOS OK) */
   #aceite{
     -webkit-appearance:none; appearance:none; width:22px; height:22px; border:2px solid #fff; border-radius:6px;
     background:transparent; display:inline-grid; place-content:center; outline:2px solid #fff; outline-offset:2px; cursor:pointer;
@@ -50,6 +59,7 @@
                   transform:scale(0) rotate(45deg); transition:transform .12s ease-in-out; }
   #aceite:checked{ background:#22c55e; border-color:#22c55e; outline-color:#22c55e; }
   #aceite:checked::after{ transform:scale(1) rotate(45deg); }
+
   @media(max-width:760px){ input,select,textarea{font-size:16px} .sig-wrap canvas{height:180px} .sheet{width:100%; padding:20px} }
 </style>
 </head>
@@ -60,7 +70,7 @@
       <h1>DUO Academia · Autorização para uso de cartão por terceiros</h1>
       <div class="badge">Responda cada etapa. Ao final, veja a prévia e gere o PDF.</div>
     </div>
-    <div class="badge">v3.1 (8 etapas)</div>
+    <div class="badge">v3.2 (8 etapas)</div>
   </header>
 
   <div class="steps" id="steps"></div>
@@ -290,11 +300,14 @@
     for(let k=0;k<total;k++){ document.getElementById('s'+k).classList.toggle('active', k===step); }
     for(let k=0;k<total;k++){ document.getElementById('d'+k).classList.toggle('active', k<=step); }
     titStep.textContent = `Etapa ${step+1} de ${total}`;
-    // **Fix:** ao entrar na etapa 7 (índice 6), redimensiona o canvas agora que ficou visível
     if(step === 6){
       requestAnimationFrame(()=>{
+        const data = signaturePad ? signaturePad.toData() : null;
         resizeCanvasForHiDPI();
-        if(signaturePad){ signaturePad.clear(); }
+        if (signaturePad){
+          signaturePad.clear();
+          if (data && data.length) signaturePad.fromData(data);
+        }
       });
     }
     updatePDFButton();
@@ -338,22 +351,23 @@
   });
   document.addEventListener('change', ()=>{ renderPreview(); updatePDFButton(); });
 
-  // Assinatura
+  // Assinatura — canvas calibrado
   const canvas = document.getElementById('signaturePad');
   function resizeCanvasForHiDPI(){
-    const ratio = Math.max(window.devicePixelRatio||1,1);
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
     const rect = canvas.getBoundingClientRect();
-    const w = Math.max( Math.floor(rect.width), 600 );
-    const h = Math.max( Math.floor(rect.height), 220 );
-    canvas.width = w * ratio;
-    canvas.height = h * ratio;
+    canvas.style.width  = rect.width  + 'px';
+    canvas.style.height = rect.height + 'px';
+    canvas.width  = Math.floor(rect.width  * ratio);
+    canvas.height = Math.floor(rect.height * ratio);
     const ctx = canvas.getContext('2d');
-    ctx.setTransform(ratio,0,0,ratio,0,0);
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0,w,h);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, rect.width, rect.height);
   }
   let signaturePad;
   function initSignature(){
-    // **Fix:** usamos o callback onEnd nativo do SignaturePad para atualizar a prévia
     signaturePad = new window.SignaturePad(canvas, {
       backgroundColor: 'rgba(0,0,0,0)',
       penColor: '#111827',
@@ -380,6 +394,7 @@
     document.getElementById('pv_assinatura').src=''; updatePDFButton(); renderPreview();
   });
 
+  // Recorte fino
   function cropTransparent(dataURL, padding=6, threshold=1){
     return new Promise(resolve=>{
       const img = new Image();
@@ -536,8 +551,7 @@
     setTodayBR();
     requestAnimationFrame(()=>{
       initSignature();
-      // canvas estava oculto no boot; só dimensionamos ao abrir a etapa 7
-      go(0);
+      go(0); // canvas será calibrado quando a etapa 7 abrir
     });
   })();
 </script>
