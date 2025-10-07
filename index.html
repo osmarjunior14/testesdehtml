@@ -192,8 +192,12 @@ function updatePDFButton(){
   if (!btn) return;
   const aceiteOk = $('#aceite')?.checked;
   const assinOk  = (signaturePad && !signaturePad.isEmpty());
-  btn.disabled = !(aceiteOk && assinOk);   // sempre visível, mas desabilita/enabilita
+  if (aceiteOk && assinOk) {
+  btn.removeAttribute('disabled');   // habilita de fato (remove o atributo)
+} else {
+  btn.setAttribute('disabled','');   // desabilita
 }
+
 function ensureSignaturePad(){
   if (signaturePad) { updatePDFButton(); return; }
   const c = $('#signaturePad');
@@ -203,8 +207,8 @@ function ensureSignaturePad(){
   };
   fit();
   signaturePad = new SignaturePad(c,{backgroundColor:'#fff',penColor:'#111',minWidth:.7,maxWidth:2});
-signaturePad.onBegin = updatePDFButton; // ativa ao primeiro risco
-signaturePad.onEnd   = updatePDFButton; // e mantém ao finalizar o traço
+  signaturePad.onBegin = updatePDFButton;
+  signaturePad.onEnd   = updatePDFButton;
   $('#btnLimpar').onclick=(e)=>{e.preventDefault(); signaturePad.clear(); updatePDFButton();};
   window.addEventListener('resize',()=>{ if(!signaturePad) return; const data=signaturePad.toData(); fit(); signaturePad.clear(); signaturePad.fromData(data); });
 }
