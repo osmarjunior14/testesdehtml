@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>DUO Academia — Autorização p/ Terceiros (8 etapas) — Canvas calibrado</title>
+<title>DUO Academia — Autorização p/ Terceiros (8 etapas) — A4 fit</title>
 <style>
   :root{ --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --fg:#e5e7eb; --line:#1f2937; --brand:#3b82f6; --ok:#22c55e; --danger:#ef4444; }
   *{box-sizing:border-box} html,body{height:100%}
@@ -31,7 +31,7 @@
   .titlecenter{font-size:14px;text-align:center;margin-bottom:8px;color:var(--muted)}
   footer{margin-top:20px;font-size:12px;color:var(--muted);text-align:center}
 
-  /* ===== PDF sheet ===== */
+  /* ===== “folha” da prévia ===== */
   .sheet{background:#fff;color:#111;width:794px;min-height:1123px;padding:28mm 20mm;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 30px rgba(0,0,0,.15); margin-top:10px}
   .sheet h3{margin:0 0 8px}.sheet small{color:#555}.sheet .section{margin-top:14px}
   .sheet table{width:100%;border-collapse:collapse;font-size:13px}.sheet th,.sheet td{border:1px solid #ccc;padding:6px 8px;text-align:left}
@@ -40,7 +40,7 @@
   .sheet .line{height:1px;background:#ccc;margin:6px 0}
   .sheet .brand{display:flex;align-items:center;gap:10px}.sheet .brand img.logo{height:38px;width:auto;display:block}
 
-  /* MAIÚSCULO */
+  /* MAIÚSCULO (campos) */
   input[type="text"], input:not([type]), textarea { text-transform: uppercase; }
   input[type="date"], input[type="number"] { text-transform: none; }
   #printArea .ans { text-transform: uppercase; }
@@ -70,7 +70,7 @@
       <h1>DUO Academia · Autorização para uso de cartão por terceiros</h1>
       <div class="badge">Responda cada etapa. Ao final, veja a prévia e gere o PDF.</div>
     </div>
-    <div class="badge">v3.2 (8 etapas)</div>
+    <div class="badge">v3.3 (8 etapas)</div>
   </header>
 
   <div class="steps" id="steps"></div>
@@ -191,7 +191,7 @@
   <section class="screen" id="s7">
     <div class="card">
       <h2>8) Pré-visualização e PDF</h2>
-      <div class="help">A prévia abaixo já está com seus dados e sua assinatura.</div>
+    <div class="help">A prévia abaixo já está com seus dados e sua assinatura.</div>
 
       <div id="printArea" class="sheet" aria-label="Área imprimível">
         <div style="display:flex;justify-content:space-between;align-items:flex-start">
@@ -277,12 +277,12 @@
 
 <script>
   const $ = (s)=>document.querySelector(s);
-  const onlyDigits = v => (v||'').replace(/\\D+/g,'');
+  const onlyDigits = v => (v||'').replace(/\D+/g,'');
   const U = s => (s || '').toLocaleUpperCase('pt-BR');
   const docId = () => new Date().toISOString().replace(/[-:TZ.]/g,'').slice(0,14);
 
   function slugUpper(s){
-    return (s||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'');
+    return (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase().replace(/[^A-Z0-9]+/g,'');
   }
 
   // Steps
@@ -300,6 +300,7 @@
     for(let k=0;k<total;k++){ document.getElementById('s'+k).classList.toggle('active', k===step); }
     for(let k=0;k<total;k++){ document.getElementById('d'+k).classList.toggle('active', k<=step); }
     titStep.textContent = `Etapa ${step+1} de ${total}`;
+    // Redimensiona o canvas ao abrir a etapa 7 (índice 6)
     if(step === 6){
       requestAnimationFrame(()=>{
         const data = signaturePad ? signaturePad.toData() : null;
@@ -342,7 +343,7 @@
   // Máscaras
   const maskCPF = v => {
     v = onlyDigits(v).slice(0,11);
-    return v.replace(/(\\d{3})(\\d)/,'$1.$2').replace(/(\\d{3})(\\d)/,'$1.$2').replace(/(\\d{3})(\\d{1,2})$/,'$1-$2');
+    return v.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
   };
   document.addEventListener('input', e=>{
     if(e.target.id==='titular_cpf' || e.target.id==='contratante_cpf') e.target.value = maskCPF(e.target.value);
@@ -458,7 +459,7 @@
   function isValidCPF(cpf){
     cpf = onlyDigits(cpf);
     if (cpf.length !== 11) return false;
-    if (/^(\\d)\\1{10}$/.test(cpf)) return false;
+    if (/^(\d)\1{10}$/.test(cpf)) return false;
     let s=0,r; for(let i=1;i<=9;i++) s+=parseInt(cpf.substring(i-1,i))*(11-i);
     r=(s*10)%11; if(r===10||r===11) r=0; if(r!==parseInt(cpf.substring(9,10))) return false;
     s=0; for(let i=1;i<=10;i++) s+=parseInt(cpf.substring(i-1,i))*(12-i);
@@ -494,6 +495,7 @@
     }
   }
 
+  // ======== A4 FIT: gera PDF cabendo em 1 página ========
   async function generatePDF(){
     const v = getValues();
     const err = validateForPDF(v);
@@ -501,19 +503,44 @@
     document.getElementById('doc_id').textContent = docId();
     renderPreview();
     pushSignatureToPrintArea();
+
     const area = document.getElementById('printArea');
+    // Render em alta (2x) para nitidez, mas vamos "fit" no A4
     const canvasImg = await html2canvas(area, { scale: 2, useCORS: true, backgroundColor:'#ffffff' });
-    const imgData = canvasImg.toDataURL('image/png');
+    const imgWpx = canvasImg.width, imgHpx = canvasImg.height;
+
     const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p','mm','a4');
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const w = pageWidth - 20, h = (canvasImg.height * w) / canvasImg.width;
-    pdf.addImage(imgData, 'PNG', 10, 10, w, h, undefined, 'FAST');
-    const [y,m,d] = (document.getElementById('data_assinatura').value || '').split('-');
+
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 10; // mm
+    const maxW = pageW - margin*2;
+    const maxH = pageH - margin*2;
+
+    // tamanho da imagem em “pontos” do jsPDF é arbitrário, então usamos o fit:
+    // calculamos escala para caber tanto em largura quanto em altura
+    // 1) razão em mm por pixel: usamos a largura como base
+    const pxToMm = (wPx) => maxW / wPx; // escala base para largura
+    const sW = pxToMm(imgWpx);
+    const sH = maxH / imgHpx;
+    const scale = Math.min(sW, sH);
+
+    const imgWmm = imgWpx * scale;
+    const imgHmm = imgHpx * scale;
+
+    const x = (pageW - imgWmm) / 2; // centraliza
+    const y = (pageH - imgHmm) / 2;
+
+    const imgData = canvasImg.toDataURL('image/png');
+    pdf.addImage(imgData, 'PNG', x, y, imgWmm, imgHmm, undefined, 'FAST');
+
+    // Nome do arquivo
+    const [yS,mS,dS] = (document.getElementById('data_assinatura').value || '').split('-');
     const hoje = new Date();
-    const dd = (d || String(hoje.getDate()).padStart(2,'0'));
-    const mm2 = (m || String(hoje.getMonth()+1).padStart(2,'0'));
-    const yy = (y || String(hoje.getFullYear()));
+    const dd = (dS || String(hoje.getDate()).padStart(2,'0'));
+    const mm2 = (mS || String(hoje.getMonth()+1).padStart(2,'0'));
+    const yy = (yS || String(hoje.getFullYear()));
     const dataStr = `${dd}${mm2}${yy}`;
     const nome = slugUpper(document.getElementById('contratante_nome').value);
     const filename = `TERMOCARTAO_${nome}_${dataStr}.pdf`;
