@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
-<title>DUO Academia — PAR-Q (1 por tela)</title>
+<title>DUO Academia — PAR-Q (1 por tela, sem prévia)</title>
 <style>
   :root{--bg:#0b1220;--panel:#0f1626;--line:#1f2937;--fg:#e7ecf3;--muted:#9fb0c7;--brand:#3b82f6;--ok:#22c55e;--danger:#ef4444;--dot:#2a3a55;}
   *{box-sizing:border-box}
@@ -41,9 +41,13 @@
   #sigWrap{display:none}
   canvas{width:100%;height:190px;background:#fff;border-radius:10px;border:0;touch-action:none}
   footer{margin:16px 4px 6px;text-align:center;color:var(--muted);font-size:.85rem}
-  /* PRÉVIA VISÍVEL (mesma estrutura do seu original) */
-  .preview{margin-top:18px}
-  .sheet{background:#fff;color:#111;width:794px;min-height:1123px;padding:28mm 20mm;border:1px solid #ddd;border-radius:6px;box-shadow:0 4px 30px rgba(0,0,0,.15)}
+
+  /* --- Área de impressão oculta (não usar display:none) --- */
+  #printContainer{
+    position:absolute; left:-100000px; top:-100000px; /* fora da tela */
+    width:0; height:0; overflow:hidden; visibility:visible;
+  }
+  .sheet{background:#fff;color:#111;width:794px;min-height:1123px;padding:28mm 20mm;border:1px solid #ddd;border-radius:6px}
   .sheet table{width:100%;border-collapse:collapse;font-size:13px}
   .sheet th,.sheet td{border:1px solid #ccc;padding:10px 12px;text-align:left;vertical-align:middle}
   #pv_questions th:nth-child(2),#pv_questions th:nth-child(3),#pv_questions td:nth-child(2),#pv_questions td:nth-child(3){width:10.5%;text-align:center}
@@ -90,64 +94,37 @@
     <!-- 3–9: Perguntas S/N -->
     <section class="screen"><div class="card">
       <div><strong>1. Tem algum problema cardíaco de qualquer tipo?</strong></div>
-      <div class="yn">
-        <button class="btn ok" data-yn="q1:S">Sim</button>
-        <button class="btn"  data-yn="q1:N">Não</button>
-      </div>
+      <div class="yn"><button class="btn ok" data-yn="q1:S">Sim</button><button class="btn" data-yn="q1:N">Não</button></div>
       <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
     </div></section>
-
     <section class="screen"><div class="card">
       <div><strong>2. Sente dores no peito quando pratica exercícios?</strong></div>
-      <div class="yn">
-        <button class="btn ok" data-yn="q2:S">Sim</button>
-        <button class="btn"  data-yn="q2:N">Não</button>
-      </div>
+      <div class="yn"><button class="btn ok" data-yn="q2:S">Sim</button><button class="btn" data-yn="q2:N">Não</button></div>
       <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
     </div></section>
-
     <section class="screen"><div class="card">
       <div><strong>3. Recentemente sentiu dores no peito durante algum exercício físico?</strong></div>
-      <div class="yn">
-        <button class="btn ok" data-yn="q3:S">Sim</button>
-        <button class="btn"  data-yn="q3:N">Não</button>
-      </div>
+      <div class="yn"><button class="btn ok" data-yn="q3:S">Sim</button><button class="btn" data-yn="q3:N">Não</button></div>
       <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
     </div></section>
-
     <section class="screen"><div class="card">
       <div><strong>4. Apresenta desequilíbrio ou tontura levando ao desmaio?</strong></div>
-      <div class="yn">
-        <button class="btn ok" data-yn="q4:S">Sim</button>
-        <button class="btn"  data-yn="q4:N">Não</button>
-      </div>
+      <div class="yn"><button class="btn ok" data-yn="q4:S">Sim</button><button class="btn" data-yn="q4:N">Não</button></div>
       <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
     </div></section>
-
     <section class="screen"><div class="card">
       <div><strong>5. Tem algum problema osteomioarticular que possa piorar com o exercício?</strong></div>
-      <div class="yn">
-        <button class="btn ok" data-yn="q5:S">Sim</button>
-        <button class="btn"  data-yn="q5:N">Não</button>
-      </div>
+      <div class="yn"><button class="btn ok" data-yn="q5:S">Sim</button><button class="btn" data-yn="q5:N">Não</button></div>
       <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
     </div></section>
-
     <section class="screen"><div class="card">
       <div><strong>6. Usa algum medicamento para pressão arterial ou coração?</strong></div>
-      <div class="yn">
-        <button class="btn ok" data-yn="q6:S">Sim</button>
-        <button class="btn"  data-yn="q6:N">Não</button>
-      </div>
+      <div class="yn"><button class="btn ok" data-yn="q6:S">Sim</button><button class="btn" data-yn="q6:N">Não</button></div>
       <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
     </div></section>
-
     <section class="screen"><div class="card">
       <div><strong>7. Sabe de alguma razão pela qual não deve praticar exercícios?</strong></div>
-      <div class="yn">
-        <button class="btn ok" data-yn="q7:S">Sim</button>
-        <button class="btn"  data-yn="q7:N">Não</button>
-      </div>
+      <div class="yn"><button class="btn ok" data-yn="q7:S">Sim</button><button class="btn" data-yn="q7:N">Não</button></div>
       <div class="btns"><button class="btn ghost" data-back>Voltar</button></div>
     </div></section>
 
@@ -164,13 +141,11 @@
           <input id="aceite" type="checkbox"> <span>Li e concordo com o termo acima.</span>
         </label>
 
-        <!-- Rúbrica aparece só depois do aceite -->
+        <!-- Rúbrica aparece só após o aceite -->
         <div id="sigWrap">
           <label>Rúbrica/Assinatura</label>
           <canvas id="signaturePad" width="900" height="380" aria-label="Área para assinatura"></canvas>
-          <div class="btns" style="margin-top:10px">
-            <button class="btn" id="btnLimpar">Limpar</button>
-          </div>
+          <div class="btns" style="margin-top:10px"><button class="btn" id="btnLimpar">Limpar</button></div>
         </div>
 
         <!-- Botão só aparece DEPOIS de assinar -->
@@ -182,66 +157,63 @@
     </section>
   </div>
 
-  <!-- PRÉ-VISUALIZAÇÃO VISÍVEL (mantida p/ garantir PDF não sair em branco) -->
-  <div class="card preview">
-    <h3 style="margin-top:0">Pré-visualização do documento (PDF)</h3>
-    <div class="help">Atualiza automaticamente conforme você preenche.</div>
+  <footer>Responda e avance. O PDF é gerado ao final.</footer>
+</div>
 
-    <div id="printArea" class="sheet" aria-label="Área imprimível">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div style="display:flex;gap:10px;align-items:flex-start">
-          <img id="sheet_logo" style="height:34px" alt="Logo DUO"/>
-          <div>
-            <h3 style="margin:0 0 4px">DUO ACADEMIA</h3>
-            <small style="color:#555">PAR-Q — Questionário de Prontidão para Atividade Física</small>
-          </div>
-        </div>
-        <div style="text-align:right">
-          <div style="font-size:12px;color:#444">Código: <span id="doc_id"></span></div>
-          <div style="font-size:12px;color:#444">Data: <span id="doc_data"></span></div>
+<!-- Área OCULTA usada na geração do PDF -->
+<div id="printContainer" aria-hidden="true">
+  <div id="printArea" class="sheet">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <img id="sheet_logo" style="height:34px" alt="Logo DUO"/>
+        <div>
+          <h3 style="margin:0 0 4px">DUO ACADEMIA</h3>
+          <small style="color:#555">PAR-Q — Questionário de Prontidão para Atividade Física</small>
         </div>
       </div>
-      <div style="height:1px;background:#ccc;margin:10px 0"></div>
-
-      <div class="section">
-        <table>
-          <tr><th colspan="2">Identificação</th></tr>
-          <tr><td style="width:26%">Nome completo</td><td id="pv_nome"></td></tr>
-          <tr><td>CPF</td><td id="pv_cpf"></td></tr>
-        </table>
-      </div>
-
-      <div class="section" style="margin-top:14px">
-        <table id="pv_questions">
-          <tr><th style="width:79%">Pergunta</th><th>S</th><th>N</th></tr>
-          <tr><td>1. Problema cardíaco de qualquer tipo</td><td id="p1s" class="sn"></td><td id="p1n" class="sn"></td></tr>
-          <tr><td>2. Dores no peito ao praticar exercícios</td><td id="p2s" class="sn"></td><td id="p2n" class="sn"></td></tr>
-          <tr><td>3. Dores recentes no peito durante exercício</td><td id="p3s" class="sn"></td><td id="p3n" class="sn"></td></tr>
-          <tr><td>4. Desequilíbrio/tontura levando ao desmaio</td><td id="p4s" class="sn"></td><td id="p4n" class="sn"></td></tr>
-          <tr><td>5. Problema osteomioarticular que pode piorar</td><td id="p5s" class="sn"></td><td id="p5n" class="sn"></td></tr>
-          <tr><td>6. Uso de medicamento para pressão/coração</td><td id="p6s" class="sn"></td><td id="p6n" class="sn"></td></tr>
-          <tr><td>7. Alguma razão para não praticar exercícios</td><td id="p7s" class="sn"></td><td id="p7n" class="sn"></td></tr>
-        </table>
-      </div>
-
-      <div class="section" style="margin-top:14px">
-        <table>
-          <tr><th>Termo de responsabilidade</th></tr>
-          <tr><td>
-            Declaro estar ciente de que é recomendável a consulta médica antes de aumentar meu nível de atividade física.
-            Assumo plena responsabilidade por minha prática e concordo com os termos.
-          </td></tr>
-          <tr><td>
-            <img id="pv_assinatura" alt="Assinatura" style="display:block;width:100%;height:120px;object-fit:contain"/>
-            <div style="height:1px;background:#bbb;margin:6px 0"></div>
-            <div style="font-size:12px;color:#555">Assinatura/Rúbrica do Contratante</div>
-          </td></tr>
-        </table>
+      <div style="text-align:right">
+        <div style="font-size:12px;color:#444">Código: <span id="doc_id"></span></div>
+        <div style="font-size:12px;color:#444">Data: <span id="doc_data"></span></div>
       </div>
     </div>
-  </div>
+    <div style="height:1px;background:#ccc;margin:10px 0"></div>
 
-  <footer>Responda e avance. O PDF é gerado ao final.</footer>
+    <div class="section">
+      <table>
+        <tr><th colspan="2">Identificação</th></tr>
+        <tr><td style="width:26%">Nome completo</td><td id="pv_nome"></td></tr>
+        <tr><td>CPF</td><td id="pv_cpf"></td></tr>
+      </table>
+    </div>
+
+    <div class="section" style="margin-top:14px">
+      <table id="pv_questions">
+        <tr><th style="width:79%">Pergunta</th><th>S</th><th>N</th></tr>
+        <tr><td>1. Problema cardíaco de qualquer tipo</td><td id="p1s" class="sn"></td><td id="p1n" class="sn"></td></tr>
+        <tr><td>2. Dores no peito ao praticar exercícios</td><td id="p2s" class="sn"></td><td id="p2n" class="sn"></td></tr>
+        <tr><td>3. Dores recentes no peito durante exercício</td><td id="p3s" class="sn"></td><td id="p3n" class="sn"></td></tr>
+        <tr><td>4. Desequilíbrio/tontura levando ao desmaio</td><td id="p4s" class="sn"></td><td id="p4n" class="sn"></td></tr>
+        <tr><td>5. Problema osteomioarticular que pode piorar</td><td id="p5s" class="sn"></td><td id="p5n" class="sn"></td></tr>
+        <tr><td>6. Uso de medicamento para pressão/coração</td><td id="p6s" class="sn"></td><td id="p6n" class="sn"></td></tr>
+        <tr><td>7. Alguma razão para não praticar exercícios</td><td id="p7s" class="sn"></td><td id="p7n" class="sn"></td></tr>
+      </table>
+    </div>
+
+    <div class="section" style="margin-top:14px">
+      <table>
+        <tr><th>Termo de responsabilidade</th></tr>
+        <tr><td>
+          Declaro estar ciente de que é recomendável a consulta médica antes de aumentar meu nível de atividade física.
+          Assumo plena responsabilidade por minha prática e concordo com os termos.
+        </td></tr>
+        <tr><td>
+          <img id="pv_assinatura" alt="Assinatura" style="display:block;width:100%;height:120px;object-fit:contain"/>
+          <div style="height:1px;background:#bbb;margin:6px 0"></div>
+          <div style="font-size:12px;color:#555">Assinatura/Rúbrica do Contratante</div>
+        </td></tr>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- libs -->
@@ -306,13 +278,8 @@
   }
 
   $('#aceite').addEventListener('change',e=>{
-    if(e.target.checked){
-      $('#sigWrap').style.display='block'; ensureSignaturePad();
-    }else{
-      $('#sigWrap').style.display='none';
-      $('#pdfRow').style.display='none';
-      if(signaturePad){ signaturePad.clear(); $('#pv_assinatura').removeAttribute('src'); }
-    }
+    if(e.target.checked){ $('#sigWrap').style.display='block'; ensureSignaturePad(); }
+    else{ $('#sigWrap').style.display='none'; $('#pdfRow').style.display='none'; if(signaturePad){ signaturePad.clear(); $('#pv_assinatura').removeAttribute('src'); } }
   });
 
   /* data e logo p/ PDF */
@@ -363,9 +330,7 @@
   $('#btnPDF').addEventListener('click', e=>{ e.preventDefault(); generatePDF(); });
 
   /* inicia */
-  const dotsInit=()=>paintDots(); dotsInit();
-  $('#b1next').addEventListener('click',()=>go(1));
-  setStage();
+  paintDots(); setStage();
 </script>
 </body>
 </html>
