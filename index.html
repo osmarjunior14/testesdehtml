@@ -23,7 +23,7 @@
   .btn{appearance:none;border:1px solid #2a3448;background:#162136;color:#dbeafe;padding:10px 14px;border-radius:10px;cursor:pointer;font-size:14px}
   .btn.ok{background:var(--ok);border-color:var(--ok);color:#001a07}.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
 
-  .terms{border:1px dashed #334155;border-radius:12px;padding:12px;background:#0b1220;max-height:220px;overflow:auto}
+  .terms{border:1px dashed #334155;border-radius:12px;padding:12px;background:#0b1220;overflow:hidden}
   .sig-wrap{background:#0b1220;border:1px solid #1c2536;border-radius:12px;padding:12px}
   .sig-wrap canvas{width:100%;height:220px;background:#fff;border-radius:8px;border:1px solid #334155;display:block;touch-action:none;cursor:crosshair}
 
@@ -84,7 +84,7 @@
       <h1>DUO Academia · Autorização para uso de cartão por terceiros</h1>
       <div class="badge">Responda cada etapa. Ao final, gere o PDF.</div>
     </div>
-    <div class="badge">v3.7 (8 etapas)</div>
+    <div class="badge">v3.8 (8 etapas)</div>
   </header>
 
   <div class="steps" id="steps"></div>
@@ -144,32 +144,26 @@
     </div>
   </section>
 
-  <!-- 7) Termo + assinatura -->
+  <!-- 7) Termo + assinatura (apenas PARÁGRAFO ÚNICO) -->
   <section class="screen" id="s6">
     <div class="card">
       <h2>7) Termo de autorização + rúbrica</h2>
+
       <div class="terms" aria-readonly="true">
-        <strong>DUO ACADEMIA</strong><br>
-        Av. Simoa Gomes, 726 – Heliópolis · R. Dom José, 187 – Santo Antônio<br>
-        (87) 9 9666-0021 | (87) 9 9934-1230 · coordenacaoduoacademia@gmail.com<br>
-        <div class="hr"></div>
-        <div class="title-tight" style="text-align:center;font-weight:700;margin:6px 0 12px">
-          TERMO DE AUTORIZAÇÃO PARA USO DE CARTÃO DE CRÉDITO/DÉBITO POR TERCEIROS
-        </div>
-        <div class="section">
-          <div style="font-weight:600;">[DADOS DO TITULAR DO CARTÃO]</div>
-          NOME COMPLETO: <span class="mono" id="tt_pre_titular">____________________________</span><br>
-          NÚMERO DO CPF: <span class="mono" id="tt_pre_cpf_titular">___.___.___-__</span>
-        </div>
-        <div class="section">
-          <div style="font-weight:600;">[DADOS DO CARTÃO UTILIZADO]</div>
-          QUATRO ÚLTIMOS DÍGITOS: <span class="mono" id="tt_pre_u4">____</span>
-        </div>
-        <div class="section">
-          <div style="font-weight:600;">[DADOS DO CONTRATANTE DO PLANO]</div>
-          NOME COMPLETO: <span class="mono" id="tt_pre_contratante">____________________________</span><br>
-          NÚMERO DO CPF: <span class="mono" id="tt_pre_cpf_contratante">___.___.___-__</span>
-        </div>
+        <table style="width:100%; border-collapse:collapse; font-size:13px; background:#0b1220">
+          <tr>
+            <th style="text-align:left; border:1px solid #334155; padding:8px; background:#0f1524; color:#e5e7eb">
+              PARÁGRAFO ÚNICO
+            </th>
+          </tr>
+          <tr>
+            <td style="border:1px solid #334155; padding:10px 12px; color:#e5e7eb; font-size:14px; line-height:1.5; text-align:justify">
+              O TITULAR autoriza a CONTRATADA a utilizar o cartão de crédito e/ou débito dele para realizar a adesão de
+              algum contrato, produto ou serviço para o CONTRATANTE, assumindo responsabilidade em caso de eventuais
+              situações interpessoais entre TITULAR e CONTRATANTE.
+            </td>
+          </tr>
+        </table>
       </div>
 
       <label style="display:flex;align-items:center;gap:12px;margin-top:10px">
@@ -429,7 +423,7 @@
     $('#doc_id').textContent   = docId();
     $('#doc_data').textContent = (v.data || '').split('-').reverse().join('/');
 
-    // Campos
+    // Campos PDF
     $('#pv_titular_nome').textContent = U(v.titular_nome);
     $('#pv_titular_cpf').textContent  = v.titular_cpf;
     $('#pv_u4').textContent           = v.ultimos4;
